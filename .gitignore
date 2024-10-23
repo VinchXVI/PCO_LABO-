@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
-code/CMakelists.txt
+/code/CMakelists.txt
+build-code-Desktop-Debug
 
 # Compiled Object files
 *.slo
