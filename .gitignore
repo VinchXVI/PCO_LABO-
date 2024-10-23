@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
 /code/CMakelists.txt
+/code/CMakeLists.txt.user
 build-code-Desktop-Debug
 
 # Compiled Object files
