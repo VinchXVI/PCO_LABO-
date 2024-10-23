@@ -5,6 +5,8 @@
 
 IWindowInterface* Clinic::interface = nullptr;
 
+//test
+
 Clinic::Clinic(int uniqueId, int fund, std::vector<ItemType> resourcesNeeded)
     : Seller(fund, uniqueId), nbTreated(0), resourcesNeeded(resourcesNeeded)
 {
