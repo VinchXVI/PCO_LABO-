@@ -18,14 +18,15 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
     }
 }
 
-int Hospital::request(ItemType what, int qty){
+int Hospital::request(ItemType what, int qty){ //TODO
     int cost;
     switch (what) {
     case ItemType::PatientSick :
-        if(this->money >= getCostPerUnit(ItemType::PatientSick) and this->getNumberPatients() < this->maxBeds){ // achat de patient un par un
+        if(this->getNumberPatients() < this->maxBeds){ // achat de patient un par un
             cost = getCostPerUnit(ItemType::PatientSick);
             this->money -= cost;
             this->stocks[ItemType::PatientSick]++;
+            this->nbHospitalised++;
             break;
         } else {
             cost = 0;
@@ -38,11 +39,24 @@ int Hospital::request(ItemType what, int qty){
 }
 
 void Hospital::freeHealedPatient() {
-    // TODO 
+    if(this->stocks[ItemType::PatientHealed] != 0){
+        this->stocks[ItemType::PatientHealed]--;
+        this->money += getCostPerUnit(ItemType::PatientHealed);
+        this->nbFree++;
+    }
 }
 
 void Hospital::transferPatientsFromClinic() {
-    // TODO
+    int cost;
+    if(this->getNumberPatients() < this->maxBeds){
+      cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
+      if(cost != 0){
+          this->money -= cost;
+          this->stocks[ItemType::PatientHealed]++;
+          this->nbHospitalised++;
+
+      }
+    }
 }
 
 int Hospital::send(ItemType it, int qty, int bill) {
@@ -59,7 +73,7 @@ void Hospital::run()
 
     interface->consoleAppendText(uniqueId, "[START] Hospital routine");
 
-    while (true /*TODO*/) {
+    while (this->money > 0) { // Tant qu'il a l'argent
         transferPatientsFromClinic();
 
         freeHealedPatient();

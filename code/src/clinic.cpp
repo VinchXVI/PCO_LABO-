@@ -5,8 +5,6 @@
 
 IWindowInterface* Clinic::interface = nullptr;
 
-//test
-
 Clinic::Clinic(int uniqueId, int fund, std::vector<ItemType> resourcesNeeded)
     : Seller(fund, uniqueId), nbTreated(0), resourcesNeeded(resourcesNeeded)
 {
@@ -27,25 +25,52 @@ bool Clinic::verifyResources() {
     return true;
 }
 
-int Clinic::request(ItemType what, int qty){
-    // TODO 
-
-    return 0;
+int Clinic::request(ItemType what, int qty){ // what == PatientHealed
+    int cost;
+    if(this->stocks[what] != 0){
+        cost = getCostPerUnit(what);
+        this->money += cost;
+        this->stocks[what]--;
+    } else {
+        cost = 0;
+    }
+    return cost;
 }
 
 void Clinic::treatPatient() {
-    // TODO 
+    int employeeCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientSick));
+    this->money -= employeeCost;
 
     //Temps simulant un traitement 
     interface->simulateWork();
 
-    // TODO 
+    this->stocks[ItemType::PatientSick]--;
+    this->stocks[ItemType::PatientHealed]++;
+    this->nbTreated++;
     
     interface->consoleAppendText(uniqueId, "Clinic have healed a new patient");
 }
 
-void Clinic::orderResources() {
-    // TODO 
+void Clinic::orderResources() { // commande une ressource une par une (à changer ?)
+    int cost = 0;
+    for(auto item : resourcesNeeded){
+       if(this->stocks[item] == 0){
+           if(item == ItemType::PatientSick){
+               chooseRandomSeller(hospitals);
+               cost = chooseRandomSeller(hospitals)->request(item, 3);
+           } else {
+               for(Seller* supplier : suppliers){
+                   cost = supplier->request(item, 3);
+                   if (!cost)
+                       break;
+               }
+           }
+           if(cost != 0){
+               this->money -= cost;
+               this->stocks[item]++;
+           }
+       }
+    }
 }
 
 void Clinic::run() {
@@ -55,7 +80,7 @@ void Clinic::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (true /*TODO*/) {
+    while (this->money > 0) { // tant que la clinic a de l'argent
         
         if (verifyResources()) {
             treatPatient();
