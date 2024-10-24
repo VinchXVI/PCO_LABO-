@@ -19,8 +19,22 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
 }
 
 int Hospital::request(ItemType what, int qty){
-    // TODO 
-    return 0;
+    int cost;
+    switch (what) {
+    case ItemType::PatientSick :
+        if(this->money >= getCostPerUnit(ItemType::PatientSick) and this->getNumberPatients() < this->maxBeds){ // achat de patient un par un
+            cost = getCostPerUnit(ItemType::PatientSick);
+            this->money -= cost;
+            this->stocks[ItemType::PatientSick]++;
+            break;
+        } else {
+            cost = 0;
+            break;
+        }
+    default:
+        cost = 0;
+    }
+    return cost;
 }
 
 void Hospital::freeHealedPatient() {

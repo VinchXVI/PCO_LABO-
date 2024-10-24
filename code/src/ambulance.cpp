@@ -20,14 +20,19 @@ Ambulance::Ambulance(int uniqueId, int fund, std::vector<ItemType> resourcesSupp
     interface->updateFund(uniqueId, fund);
 }
 
-void Ambulance::sendPatient(){
-    // TODO
+void Ambulance::sendPatient(){ //TODO
+   Seller* hospital = chooseRandomSeller(hospitals);
+   if(hospital->request(ItemType::PatientSick, 1) != 0){ //si l'hopital peut "acheter" un patient
+        this->money += getCostPerUnit(ItemType::PatientSick);
+        this->stocks[ItemType::PatientSick]--;
+        this->nbTransfer++;
+   }
 }
 
 void Ambulance::run() {
     interface->consoleAppendText(uniqueId, "[START] Ambulance routine");
 
-    while (true /*TODO*/) {
+    while (this->getNumberPatients()) { //Tant que sont "stock" de patients n'est pas vide
     
         sendPatient();
         
