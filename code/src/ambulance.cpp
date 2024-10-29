@@ -31,7 +31,7 @@ void Ambulance::sendPatient(){ //TODO
 void Ambulance::run() {
     interface->consoleAppendText(uniqueId, "[START] Ambulance routine");
 
-    while (this->getNumberPatients()) { //Tant que son "stock" de patients n'est pas vide
+    while (this->getNumberPatients()) { //Tant que son "stock" de patients n'est pas vide (TODO)
     
         sendPatient();
         

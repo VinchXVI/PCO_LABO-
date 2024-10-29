@@ -25,7 +25,7 @@ bool Clinic::verifyResources() {
     return true;
 }
 
-int Clinic::request(ItemType what, int qty){ // what == PatientHealed
+int Clinic::request(ItemType what, int qty){ // what == PatientHealed TODO
     int cost;
     if(this->stocks[what] != 0){
         cost = getCostPerUnit(what);
@@ -51,7 +51,7 @@ void Clinic::treatPatient() {
     interface->consoleAppendText(uniqueId, "Clinic have healed a new patient");
 }
 
-void Clinic::orderResources() { // commande une ressource une par une (à changer ?)
+void Clinic::orderResources() { // commande une ressource une par une (à changer ?) TODO
     int cost = 0;
     for(auto item : resourcesNeeded){
        if(this->stocks[item] == 0){
@@ -80,7 +80,7 @@ void Clinic::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (this->money > 0) { // tant que la clinic a de l'argent
+    while (this->money > 0) { // tant que la clinic a de l'argent (TODO)
         
         if (verifyResources()) {
             treatPatient();

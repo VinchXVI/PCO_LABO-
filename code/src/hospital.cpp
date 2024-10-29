@@ -43,7 +43,7 @@ int Hospital::request(ItemType what, int qty){ //TODO
     return cost;
 }
 
-void Hospital::freeHealedPatient() {
+void Hospital::freeHealedPatient() { //TODO
     static PcoMutex mutex;
     if(this->stocks[ItemType::PatientHealed] != 0){
         mutex.lock();
@@ -54,7 +54,7 @@ void Hospital::freeHealedPatient() {
     }
 }
 
-void Hospital::transferPatientsFromClinic() {
+void Hospital::transferPatientsFromClinic() { //TODO
     static PcoMutex mutex;
     int cost;
     if(this->getNumberPatients() < this->maxBeds){
@@ -84,7 +84,7 @@ void Hospital::run()
     interface->consoleAppendText(uniqueId, "[START] Hospital routine");
     int DayCounter = 0;
 
-    while (this->money > 0 or this->getNumberPatients() > 0) { // Tant qu'il a l'argent ou des patent
+    while (this->money > 0) { // Tant qu'il y a de l'argent (TODO)
         transferPatientsFromClinic();
 
         if(DayCounter % 5 == 0)

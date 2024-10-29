@@ -16,7 +16,7 @@ Supplier::Supplier(int uniqueId, int fund, std::vector<ItemType> resourcesSuppli
 }
 
 
-int Supplier::request(ItemType it, int qty) {
+int Supplier::request(ItemType it, int qty) { //TODO
     int cost;
     if(qty <= this->stocks[it]){
         cost = qty * getCostPerUnit(it);
@@ -30,17 +30,19 @@ int Supplier::request(ItemType it, int qty) {
 
 void Supplier::run() {
     interface->consoleAppendText(uniqueId, "[START] Supplier routine");
-    while (this->money > 0) { // tant qu'il a de l'argent
+    while (this->money > 0) { // tant qu'il a de l'argent (TODO)
         ItemType resourceSupplied = getRandomItemFromStock();
         int supplierCost = getEmployeeSalary(getEmployeeThatProduces(resourceSupplied));
         this->money -= supplierCost;
+        //
 
         /* Temps aléatoire borné qui simule l'attente du travail fini*/
         interface->simulateWork();
 
+        //TODO
         this->stocks[resourceSupplied]++;
         nbSupplied++;
-
+        //
         interface->updateFund(uniqueId, money);
         interface->updateStock(uniqueId, &stocks);
     }
