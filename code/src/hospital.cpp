@@ -5,6 +5,8 @@
 
 IWindowInterface* Hospital::interface = nullptr;
 
+
+
 Hospital::Hospital(int uniqueId, int fund, int maxBeds)
     : Seller(fund, uniqueId), maxBeds(maxBeds), currentBeds(0), nbHospitalised(0), nbFree(0)
 {
@@ -19,14 +21,17 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
 }
 
 int Hospital::request(ItemType what, int qty){ //TODO
+    PcoMutex mutex;
     int cost;
     switch (what) {
     case ItemType::PatientSick :
         if(this->getNumberPatients() < this->maxBeds){ // achat de patient un par un
+            mutex.lock();
             cost = getCostPerUnit(ItemType::PatientSick);
             this->money -= cost;
             this->stocks[ItemType::PatientSick]++;
             this->nbHospitalised++;
+            mutex.unlock();
             break;
         } else {
             cost = 0;
@@ -39,22 +44,27 @@ int Hospital::request(ItemType what, int qty){ //TODO
 }
 
 void Hospital::freeHealedPatient() {
+    PcoMutex mutex;
     if(this->stocks[ItemType::PatientHealed] != 0){
+        mutex.lock();
         this->stocks[ItemType::PatientHealed]--;
         this->money += getCostPerUnit(ItemType::PatientHealed);
         this->nbFree++;
+        mutex.unlock();
     }
 }
 
 void Hospital::transferPatientsFromClinic() {
+    PcoMutex mutex;
     int cost;
     if(this->getNumberPatients() < this->maxBeds){
       cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
       if(cost != 0){
+          mutex.lock();
           this->money -= cost;
           this->stocks[ItemType::PatientHealed]++;
           this->nbHospitalised++;
-
+          mutex.unlock();
       }
     }
 }
@@ -72,15 +82,18 @@ void Hospital::run()
     }
 
     interface->consoleAppendText(uniqueId, "[START] Hospital routine");
+    int DayCounter = 0;
 
-    while (this->money > 0) { // Tant qu'il a l'argent
+    while (this->money > 0 or this->getNumberPatients() > 0) { // Tant qu'il a l'argent ou des patent
         transferPatientsFromClinic();
 
-        freeHealedPatient();
+        if(DayCounter % 5 == 0)
+            freeHealedPatient();
 
         interface->updateFund(uniqueId, money);
         interface->updateStock(uniqueId, &stocks);
         interface->simulateWork(); // Temps d'attente
+        ++DayCounter;
     }
 
     interface->consoleAppendText(uniqueId, "[STOP] Hospital routine");
