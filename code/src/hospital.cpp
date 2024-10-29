@@ -21,7 +21,7 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
 }
 
 int Hospital::request(ItemType what, int qty){ //TODO
-    PcoMutex mutex;
+    static PcoMutex mutex;
     int cost;
     switch (what) {
     case ItemType::PatientSick :
@@ -44,7 +44,7 @@ int Hospital::request(ItemType what, int qty){ //TODO
 }
 
 void Hospital::freeHealedPatient() {
-    PcoMutex mutex;
+    static PcoMutex mutex;
     if(this->stocks[ItemType::PatientHealed] != 0){
         mutex.lock();
         this->stocks[ItemType::PatientHealed]--;
@@ -55,7 +55,7 @@ void Hospital::freeHealedPatient() {
 }
 
 void Hospital::transferPatientsFromClinic() {
-    PcoMutex mutex;
+    static PcoMutex mutex;
     int cost;
     if(this->getNumberPatients() < this->maxBeds){
       cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);

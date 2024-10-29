@@ -56,11 +56,11 @@ void Clinic::orderResources() { // commande une ressource une par une (à change
     for(auto item : resourcesNeeded){
        if(this->stocks[item] == 0){
            if(item == ItemType::PatientSick){
-               chooseRandomSeller(hospitals);
-               cost = chooseRandomSeller(hospitals)->request(item, 3);
+               //chooseRandomSeller(hospitals);
+               cost = chooseRandomSeller(hospitals)->request(item, 1);
            } else {
                for(Seller* supplier : suppliers){
-                   cost = supplier->request(item, 3);
+                   cost = supplier->request(item, 1);
                    if (!cost)
                        break;
                }
