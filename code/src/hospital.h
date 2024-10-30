@@ -101,6 +101,8 @@ private:
 
     int nbFree; // Nombre de personnes qui sont sorties soignées de l'hôpital.
 
+    PcoMutex mutex;
+
     static IWindowInterface* interface;  // Pointeur statique vers l'interface utilisateur pour les logs et mises à jour visuelles
 };
 

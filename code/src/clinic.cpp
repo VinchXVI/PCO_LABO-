@@ -3,6 +3,8 @@
 #include <pcosynchro/pcothread.h>
 #include <iostream>
 
+#include "supplier.h" //pour pouvoir appeler getResourcesSupplied() --> orderResources ()
+
 IWindowInterface* Clinic::interface = nullptr;
 
 Clinic::Clinic(int uniqueId, int fund, std::vector<ItemType> resourcesNeeded)
@@ -25,51 +27,65 @@ bool Clinic::verifyResources() {
     return true;
 }
 
-int Clinic::request(ItemType what, int qty){ // what == PatientHealed TODO
-    int cost;
+int Clinic::request(ItemType what, int qty){ // what == PatientHealed (appelé que par hopital) TODO
+    int cost = 0;
     if(this->stocks[what] != 0){
-        cost = getCostPerUnit(what);
-        this->money += cost;
+        mutex.lock();
         this->stocks[what]--;
-    } else {
-        cost = 0;
+        cost = getCostPerUnit(what) * qty;
+        this->money += cost;
+        mutex.unlock();
     }
     return cost;
 }
 
 void Clinic::treatPatient() {
-    int employeeCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientSick));
+    int employeeCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientHealed));
+    mutex.lock();
     this->money -= employeeCost;
+    mutex.unlock();
 
     //Temps simulant un traitement 
     interface->simulateWork();
 
+    mutex.lock();
     this->stocks[ItemType::PatientSick]--;
     this->stocks[ItemType::PatientHealed]++;
     this->nbTreated++;
+    mutex.unlock();
     
     interface->consoleAppendText(uniqueId, "Clinic have healed a new patient");
 }
 
 void Clinic::orderResources() { // commande une ressource une par une (à changer ?) TODO
     int cost = 0;
-    for(auto item : resourcesNeeded){
-       if(this->stocks[item] == 0){
-           if(item == ItemType::PatientSick){
-               //chooseRandomSeller(hospitals);
-               cost = chooseRandomSeller(hospitals)->request(item, 1);
-           } else {
-               for(Seller* supplier : suppliers){
-                   cost = supplier->request(item, 1);
-                   if (!cost)
-                       break;
-               }
-           }
-           if(cost != 0){
-               this->money -= cost;
-               this->stocks[item]++;
-           }
-       }
+    for(ItemType item : this->resourcesNeeded){
+        if(this->stocks[item] == 0){
+            switch (item) {
+            case ItemType::PatientSick :
+                cost = chooseRandomSeller(hospitals)->request(item, 1);
+            case ItemType::Pill :
+            case ItemType::Scalpel :
+            case ItemType::Stethoscope :
+            case ItemType::Syringe :
+            case ItemType::Thermometer :
+                for(Seller* supplier : suppliers){ // cherche parmi chaque vendeur
+                    for(ItemType it : dynamic_cast<Supplier*>(supplier)->getResourcesSupplied()){ // cherche si le vendeur vend l'article
+                        if(item == it){
+                            cost = supplier->request(item, 1);
+                            break;
+                        }
+                    }
+                }
+            default:;
+            } // fin de switch
+            if(cost){ // Si la transaction a pu se faire
+                mutex.lock();
+                this->stocks[item]++;
+                this->money -= cost;
+                mutex.unlock();
+            }
+        } // fin de if
     }
 }
 

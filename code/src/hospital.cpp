@@ -5,8 +5,6 @@
 
 IWindowInterface* Hospital::interface = nullptr;
 
-
-
 Hospital::Hospital(int uniqueId, int fund, int maxBeds)
     : Seller(fund, uniqueId), maxBeds(maxBeds), currentBeds(0), nbHospitalised(0), nbFree(0)
 {
@@ -20,47 +18,37 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
     }
 }
 
-int Hospital::request(ItemType what, int qty){ //TODO
-    static PcoMutex mutex;
-    int cost;
-    switch (what) {
-    case ItemType::PatientSick :
-        if(this->getNumberPatients() < this->maxBeds){ // achat de patient un par un
-            mutex.lock();
-            cost = getCostPerUnit(ItemType::PatientSick);
-            this->money -= cost;
-            this->stocks[ItemType::PatientSick]++;
-            this->nbHospitalised++;
-            mutex.unlock();
-            break;
-        } else {
-            cost = 0;
-            break;
-        }
-    default:
-        cost = 0;
+int Hospital::request(ItemType what, int qty){ // what == patientSick (appelé que par clinic)
+    int cost = 0;
+    if(this->stocks[what] >= qty){
+        mutex.lock();
+        this->stocks[what] -= qty;
+        cost = getCostPerUnit(what) * qty;
+        // paiement infirmers à ajouter
+        this->money += cost;
+        mutex.unlock();
     }
     return cost;
 }
 
 void Hospital::freeHealedPatient() { //TODO
-    static PcoMutex mutex;
-    if(this->stocks[ItemType::PatientHealed] != 0){
+    if(this->stocks[ItemType::PatientHealed] > 0){
         mutex.lock();
         this->stocks[ItemType::PatientHealed]--;
         this->money += getCostPerUnit(ItemType::PatientHealed);
+        // paiement infirmiers à ajouter (?)
         this->nbFree++;
         mutex.unlock();
     }
 }
 
 void Hospital::transferPatientsFromClinic() { //TODO
-    static PcoMutex mutex;
     int cost;
-    if(this->getNumberPatients() < this->maxBeds){
+    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + 1 <= this->maxBeds){
       cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
       if(cost != 0){
           mutex.lock();
+          // paiement infirmiers à ajouter
           this->money -= cost;
           this->stocks[ItemType::PatientHealed]++;
           this->nbHospitalised++;
@@ -69,9 +57,18 @@ void Hospital::transferPatientsFromClinic() { //TODO
     }
 }
 
-int Hospital::send(ItemType it, int qty, int bill) {
-    // TODO
-    return 0;
+int Hospital::send(ItemType it, int qty, int bill) { // it == patientSick (appelé que par ambulance)
+    int cost = 0;
+    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + qty <= this->maxBeds or qty * bill <= this->money){
+        mutex.lock();
+        this->stocks[it] += qty;
+        cost = bill * qty;
+        // paiement infirmiers à ajouter
+        this->money -= cost;
+        this->nbHospitalised++;
+        mutex.unlock();
+    }
+    return cost;
 }
 
 void Hospital::run()

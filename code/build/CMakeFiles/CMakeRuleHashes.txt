@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+c29285d670aafa45181f6cc3e6137d37 CMakeFiles/pco_hospital_autogen
+380361df637fedb76ce936a933e4cd10 CMakeFiles/pco_hospital_tests_autogen

@@ -1,0 +1,6 @@
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/pco_hospital.dir
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/pco_hospital_tests.dir
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/edit_cache.dir
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/rebuild_cache.dir
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/pco_hospital_autogen.dir
+/home/reds/Documents/PCO_LABO-/code/build/CMakeFiles/pco_hospital_tests_autogen.dir
