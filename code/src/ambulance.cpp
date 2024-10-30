@@ -23,13 +23,13 @@ Ambulance::Ambulance(int uniqueId, int fund, std::vector<ItemType> resourcesSupp
 void Ambulance::sendPatient(){ //TODO
    //choisi un hopital aléatoirement, puis lui propose "d'acheter" un patient
    int cost = this->chooseRandomSeller(hospitals)->send(ItemType::PatientSick, 1, getCostPerUnit(ItemType::PatientSick));
+   mutex.lock();
    if (cost != 0){
-       mutex.lock();
        stocks[ItemType::PatientSick]--;
        this->money += cost;
        this->nbTransfer++;
-       mutex.unlock();
    }
+   mutex.unlock();
 }
 
 void Ambulance::run() {

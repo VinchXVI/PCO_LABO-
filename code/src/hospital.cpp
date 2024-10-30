@@ -20,54 +20,54 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
 
 int Hospital::request(ItemType what, int qty){ // what == patientSick (appelé que par clinic)
     int cost = 0;
+    mutex.lock();
     if(this->stocks[what] >= qty){
-        mutex.lock();
         this->stocks[what] -= qty;
         cost = getCostPerUnit(what) * qty;
         // paiement infirmers à ajouter
         this->money += cost;
-        mutex.unlock();
     }
+    mutex.unlock();
     return cost;
 }
 
 void Hospital::freeHealedPatient() { //TODO
+    mutex.lock();
     if(this->stocks[ItemType::PatientHealed] > 0){
-        mutex.lock();
         this->stocks[ItemType::PatientHealed]--;
         this->money += getCostPerUnit(ItemType::PatientHealed);
         // paiement infirmiers à ajouter (?)
         this->nbFree++;
-        mutex.unlock();
     }
+    mutex.unlock();
 }
 
 void Hospital::transferPatientsFromClinic() { //TODO
     int cost;
+    mutex.lock();
     if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + 1 <= this->maxBeds){
       cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
       if(cost != 0){
-          mutex.lock();
           // paiement infirmiers à ajouter
           this->money -= cost;
           this->stocks[ItemType::PatientHealed]++;
           this->nbHospitalised++;
-          mutex.unlock();
       }
     }
+    mutex.unlock();
 }
 
 int Hospital::send(ItemType it, int qty, int bill) { // it == patientSick (appelé que par ambulance)
     int cost = 0;
-    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + qty <= this->maxBeds or qty * bill <= this->money){
-        mutex.lock();
+    mutex.lock();
+    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + qty <= this->maxBeds / 2 and qty * bill <= this->money){ // divisé parr 2 pour éviter de surpeupler de patient malade
         this->stocks[it] += qty;
         cost = bill * qty;
         // paiement infirmiers à ajouter
         this->money -= cost;
         this->nbHospitalised++;
-        mutex.unlock();
     }
+    mutex.unlock();
     return cost;
 }
 

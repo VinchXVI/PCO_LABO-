@@ -29,13 +29,13 @@ bool Clinic::verifyResources() {
 
 int Clinic::request(ItemType what, int qty){ // what == PatientHealed (appelé que par hopital) TODO
     int cost = 0;
+    mutex.lock();
     if(this->stocks[what] != 0){
-        mutex.lock();
         this->stocks[what]--;
         cost = getCostPerUnit(what) * qty;
         this->money += cost;
-        mutex.unlock();
     }
+    mutex.unlock();
     return cost;
 }
 
@@ -58,35 +58,44 @@ void Clinic::treatPatient() {
 }
 
 void Clinic::orderResources() { // commande une ressource une par une (à changer ?) TODO
-    int cost = 0;
+    int cost, qty;
     for(ItemType item : this->resourcesNeeded){
+        mutex.lock();
         if(this->stocks[item] == 0){
             switch (item) {
             case ItemType::PatientSick :
-                cost = chooseRandomSeller(hospitals)->request(item, 1);
+                qty = 3;
+                if(this->money - qty * getCostPerUnit(item)){
+                cost = chooseRandomSeller(hospitals)->request(item, qty);
+                }
+                break;
             case ItemType::Pill :
             case ItemType::Scalpel :
             case ItemType::Stethoscope :
             case ItemType::Syringe :
             case ItemType::Thermometer :
+                qty = 5;
+                if(this->money - qty * getCostPerUnit(item) >= 0){
                 for(Seller* supplier : suppliers){ // cherche parmi chaque vendeur
                     for(ItemType it : dynamic_cast<Supplier*>(supplier)->getResourcesSupplied()){ // cherche si le vendeur vend l'article
                         if(item == it){
-                            cost = supplier->request(item, 1);
+                            cost = supplier->request(item, qty);
                             break;
                         }
                     }
                 }
-            default:;
+                }
+                break;
+            default:
+                break;
             } // fin de switch
             if(cost){ // Si la transaction a pu se faire
-                mutex.lock();
-                this->stocks[item]++;
+                this->stocks[item] += qty;
                 this->money -= cost;
-                mutex.unlock();
             }
         } // fin de if
-    }
+        mutex.unlock();
+    } // fin de for
 }
 
 void Clinic::run() {
