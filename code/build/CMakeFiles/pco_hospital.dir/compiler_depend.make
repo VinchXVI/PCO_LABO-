@@ -1096,42 +1096,7 @@ CMakeFiles/pco_hospital.dir/src/clinic.cpp.o: ../src/clinic.cpp \
   /usr/include/c++/11/bits/basic_ios.tcc \
   /usr/include/c++/11/bits/ostream.tcc \
   /usr/include/c++/11/istream \
-  /usr/include/c++/11/bits/istream.tcc \
-  ../src/supplier.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/QTimer \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qtimer.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbasictimer.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qlist.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qalgorithms.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qiterator.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qhashfunctions.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qpair.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvector.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainertools_impl.h \
-  /usr/include/c++/11/list \
-  /usr/include/c++/11/bits/stl_list.h \
-  /usr/include/c++/11/bits/list.tcc \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
-  /usr/include/limits.h \
-  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
-  /usr/include/linux/limits.h \
-  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qbytearraylist.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringlist.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qregexp.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qstringmatcher.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qscopedpointer.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qmetatype.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qvarlengtharray.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontainerfwd.h \
-  /usr/include/x86_64-linux-gnu/qt5/QtCore/qobject_impl.h
+  /usr/include/c++/11/bits/istream.tcc
 
 CMakeFiles/pco_hospital.dir/src/hospital.cpp.o: ../src/hospital.cpp \
   /usr/include/stdc-predef.h \
@@ -4168,6 +4133,8 @@ CMakeFiles/pco_hospital.dir/src/utils.cpp.o: ../src/utils.cpp \
 
 /usr/include/c++/11/cassert:
 
+../src/supplier.h:
+
 /usr/include/x86_64-linux-gnu/qt5/QtCore/QTextStream:
 
 /usr/include/x86_64-linux-gnu/qt5/QtCore/qcontiguouscache.h:
@@ -4189,8 +4156,6 @@ CMakeFiles/pco_hospital.dir/src/utils.cpp.o: ../src/utils.cpp \
 ../src/hospital.h:
 
 ../src/hospital.cpp:
-
-../src/supplier.h:
 
 ../src/clinic.cpp:
 

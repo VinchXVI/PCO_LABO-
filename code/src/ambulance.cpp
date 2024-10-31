@@ -20,23 +20,28 @@ Ambulance::Ambulance(int uniqueId, int fund, std::vector<ItemType> resourcesSupp
     interface->updateFund(uniqueId, fund);
 }
 
-void Ambulance::sendPatient(){ //TODO
-   //choisi un hopital aléatoirement, puis lui propose "d'acheter" un patient
-   int cost = this->chooseRandomSeller(hospitals)->send(ItemType::PatientSick, 1, getCostPerUnit(ItemType::PatientSick));
-   mutex.lock();
-   if (cost != 0){
-       stocks[ItemType::PatientSick]--;
-       this->money += cost;
-       this->nbTransfer++;
-   }
-   mutex.unlock();
+void Ambulance::sendPatient(){
+    int maxTry = 10;
+    for(int nbTry = 0; nbTry < maxTry; nbTry++){ //Essaie 10x d'envoyer des patients sinon arrête sa routine
+        //choisi un hopital aléatoirement, puis lui propose "d'acheter" un patient
+        int cost = this->chooseRandomSeller(hospitals)->send(ItemType::PatientSick, 1, getCostPerUnit(ItemType::PatientSick));
+        int supplierCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientSick));
+        if (cost){
+            mutex.lock();
+            stocks[ItemType::PatientSick]--;
+            this->money += cost - supplierCost;
+            this->nbTransfer++;
+            mutex.unlock();
+            return;
+        }
+    }
+    keepRoutine = false;
 }
 
 void Ambulance::run() {
     interface->consoleAppendText(uniqueId, "[START] Ambulance routine");
 
-    while (this->getNumberPatients() > 0) { //Tant que son "stock" de patients n'est pas vide (TODO)
-    
+    while (this->getNumberPatients() > 0 && keepRoutine) { //Tant que son "stock" de patients n'est pas vide et qu'il continue à faire des tranferts
         sendPatient();
         
         interface->simulateWork();

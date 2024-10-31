@@ -96,7 +96,8 @@ private:
 
     int nbTreated;                      // Nombre total de patients traités par la clinique
 
-    PcoMutex mutex;
+    // ajouté par nous
+    bool keepRoutine = true;
 
     static IWindowInterface* interface; // Pointeur statique vers l'interface utilisateur pour les logs et mises à jour visuelles
 

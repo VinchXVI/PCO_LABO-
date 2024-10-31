@@ -7,6 +7,8 @@
 #include <vector>
 #include "costs.h"
 
+#include <pcosynchro/pcomutex.h>
+
 enum class ItemType {
     PatientSick, PatientHealed, Syringe, Pill, Scalpel, Thermometer, Stethoscope, Nothing
 };
@@ -90,6 +92,7 @@ protected:
     std::map<ItemType, int> stocks;
     int money;
     int uniqueId;
+    PcoMutex mutex;
 };
 
 #endif // SELLER_H

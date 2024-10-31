@@ -3,8 +3,6 @@
 #include <pcosynchro/pcothread.h>
 #include <iostream>
 
-#include "supplier.h" //pour pouvoir appeler getResourcesSupplied() --> orderResources ()
-
 IWindowInterface* Clinic::interface = nullptr;
 
 Clinic::Clinic(int uniqueId, int fund, std::vector<ItemType> resourcesNeeded)
@@ -29,21 +27,27 @@ bool Clinic::verifyResources() {
 
 int Clinic::request(ItemType what, int qty){ // what == PatientHealed (appelé que par hopital) TODO
     int cost = 0;
-    mutex.lock();
     if(this->stocks[what] != 0){
+        mutex.lock();
         this->stocks[what]--;
         cost = getCostPerUnit(what) * qty;
         this->money += cost;
+        mutex.unlock();
     }
-    mutex.unlock();
     return cost;
 }
 
 void Clinic::treatPatient() {
     int employeeCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientHealed));
-    mutex.lock();
-    this->money -= employeeCost;
-    mutex.unlock();
+
+    if(this->money - employeeCost >= 0){
+        mutex.lock();
+        this->money -= employeeCost;
+        mutex.unlock();
+    } else {
+        keepRoutine = false;
+        return;
+    }
 
     //Temps simulant un traitement 
     interface->simulateWork();
@@ -59,44 +63,55 @@ void Clinic::treatPatient() {
 
 void Clinic::orderResources() { // commande une ressource une par une (à changer ?) TODO
     int cost, qty;
-    for(ItemType item : this->resourcesNeeded){
-        mutex.lock();
-        if(this->stocks[item] == 0){
+
+    for(ItemType item : this->resourcesNeeded) {
+        qty = 0;
+        cost = 0;
+
+        if(this->stocks[item] == 0) {
             switch (item) {
-            case ItemType::PatientSick :
-                qty = 3;
-                if(this->money - qty * getCostPerUnit(item)){
-                cost = chooseRandomSeller(hospitals)->request(item, qty);
+            case ItemType::PatientSick:
+                qty = 1;
+                if(this->money - qty * getCostPerUnit(item) >= 0) { // si fonds suffisants
+                    mutex.lock();
+                    cost = chooseRandomSeller(hospitals)->request(item, qty);
+                    mutex.unlock();
                 }
                 break;
-            case ItemType::Pill :
-            case ItemType::Scalpel :
-            case ItemType::Stethoscope :
-            case ItemType::Syringe :
-            case ItemType::Thermometer :
-                qty = 5;
-                if(this->money - qty * getCostPerUnit(item) >= 0){
-                for(Seller* supplier : suppliers){ // cherche parmi chaque vendeur
-                    for(ItemType it : dynamic_cast<Supplier*>(supplier)->getResourcesSupplied()){ // cherche si le vendeur vend l'article
-                        if(item == it){
-                            cost = supplier->request(item, qty);
-                            break;
+
+            case ItemType::Pill:
+            case ItemType::Scalpel:
+            case ItemType::Stethoscope:
+            case ItemType::Syringe:
+            case ItemType::Thermometer:
+                qty = 5; // commande en lot de 5
+                if(this->money - qty * getCostPerUnit(item) >= 0) { // si fonds suffisants
+                    for(Seller* supplier : suppliers) { // cherche chaque fournisseur
+                        mutex.lock();
+                        cost = supplier->request(item, qty);
+                        mutex.unlock();
+                        if(cost) {
+                            break; // sort dès qu'on a trouvé un fournisseur
                         }
                     }
                 }
-                }
                 break;
+
             default:
                 break;
-            } // fin de switch
-            if(cost){ // Si la transaction a pu se faire
+            } // fin du switch
+
+            // Mise à jour des stocks et des fonds si la transaction a réussi
+            if(cost) {
+                mutex.lock();
                 this->stocks[item] += qty;
                 this->money -= cost;
+                mutex.unlock();
             }
-        } // fin de if
-        mutex.unlock();
-    } // fin de for
+        } // fin de vérification des stocks
+    } // fin de boucle for
 }
+
 
 void Clinic::run() {
     if (hospitals.empty() || suppliers.empty()) {
@@ -105,7 +120,7 @@ void Clinic::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (this->money > 0) { // tant que la clinic a de l'argent (TODO)
+    while (this->money > 0 && keepRoutine) { // tant que la clinic a de l'argent pour s'approvisionner et traiter les patients
         
         if (verifyResources()) {
             treatPatient();
