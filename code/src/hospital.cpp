@@ -2,6 +2,7 @@
 #include "costs.h"
 #include <iostream>
 #include <pcosynchro/pcothread.h>
+#include "utils.h"
 
 IWindowInterface* Hospital::interface = nullptr;
 
@@ -90,6 +91,8 @@ void Hospital::run()
         interface->updateStock(uniqueId, &stocks);
         interface->simulateWork(); // Temps d'attente
         ++DayCounter;
+
+        if(stop == true) return;
     }
 
     interface->consoleAppendText(uniqueId, "[STOP] Hospital routine");

@@ -1,6 +1,7 @@
 #include "supplier.h"
 #include "costs.h"
 #include <pcosynchro/pcothread.h>
+#include "utils.h"
 
 IWindowInterface* Supplier::interface = nullptr;
 
@@ -53,6 +54,8 @@ void Supplier::run() {
 
         interface->updateFund(uniqueId, money);
         interface->updateStock(uniqueId, &stocks);
+
+        if(stop == true) return;
     }
     interface->consoleAppendText(uniqueId, "[STOP] Supplier routine");
 }

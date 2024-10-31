@@ -2,6 +2,7 @@
 #include "costs.h"
 #include <pcosynchro/pcothread.h>
 #include <iostream>
+#include "utils.h"
 
 IWindowInterface* Clinic::interface = nullptr;
 
@@ -132,6 +133,8 @@ void Clinic::run() {
 
         interface->updateFund(uniqueId, money);
         interface->updateStock(uniqueId, &stocks);
+
+        if(stop == true) return;
     }
     interface->consoleAppendText(uniqueId, "[STOP] Factory routine");
 }

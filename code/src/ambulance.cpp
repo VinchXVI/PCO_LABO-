@@ -1,6 +1,7 @@
 #include "ambulance.h"
 #include "costs.h"
 #include <pcosynchro/pcothread.h>
+#include "utils.h"
 
 IWindowInterface* Ambulance::interface = nullptr;
 
@@ -48,6 +49,8 @@ void Ambulance::run() {
 
         interface->updateFund(uniqueId, money);
         interface->updateStock(uniqueId, &stocks);
+
+        if(stop == true) return;
     }
 
     interface->consoleAppendText(uniqueId, "[STOP] Ambulance routine");

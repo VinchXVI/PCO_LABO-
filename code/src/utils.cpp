@@ -1,8 +1,11 @@
 #include "utils.h"
 #include <iostream>
 
+bool stop = false;
+
 void Utils::endService() {
     // TODO
+    stop = true;
 }
 
 void Utils::externalEndService() {

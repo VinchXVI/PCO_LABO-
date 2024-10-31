@@ -36,6 +36,8 @@ std::vector<Supplier*> createSuppliers(int nbSuppliers, int idStart);
 std::vector<Clinic*> createClinics(int nbClinics, int idStart);
 std::vector<Hospital*> createHospitals(int nbHospitals, int idStart);
 
+bool extern stop;
+
 class Utils {
 public:
     void externalEndService();
