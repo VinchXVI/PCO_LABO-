@@ -85,6 +85,8 @@ public:
 
     int getUniqueId() { return uniqueId; }
 
+    bool isStopped() { return stopRoutine; }
+
 protected:
     /**
      * @brief stocks : Type, Quantité
@@ -93,6 +95,7 @@ protected:
     int money;
     int uniqueId;
     PcoMutex mutex;
+    bool stopRoutine = false;
 };
 
 #endif // SELLER_H

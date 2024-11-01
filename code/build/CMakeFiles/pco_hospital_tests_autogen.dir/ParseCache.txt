@@ -391,6 +391,8 @@
  mdp:/usr/local/include/pcosynchro/pcosemaphore.h
 /home/reds/Documents/PCO_LABO-/code/src/seller.h
 /home/reds/Documents/PCO_LABO-/code/src/internal/mainwindow.cpp
+/home/reds/Documents/PCO_LABO-/code/src/supplier.cpp
+/home/reds/Documents/PCO_LABO-/code/src/hospital.cpp
 /home/reds/Documents/PCO_LABO-/code/src/internal/windowinterface.h
  mmc:Q_OBJECT
  mdp:/home/reds/Documents/PCO_LABO-/code/src/internal/windowinterface.h
@@ -789,16 +791,12 @@
  mdp:/usr/local/include/pcosynchro/pcomutex.h
  mdp:/usr/local/include/pcosynchro/pcosemaphore.h
  mdp:/usr/local/include/pcosynchro/pcothread.h
-/home/reds/Documents/PCO_LABO-/code/src/hospital.cpp
-/home/reds/Documents/PCO_LABO-/code/src/supplier.cpp
 /home/reds/Documents/PCO_LABO-/code/src/clinic.cpp
 /home/reds/Documents/PCO_LABO-/code/src/ambulance.cpp
 /home/reds/Documents/PCO_LABO-/code/src/internal/display.cpp
 /home/reds/Documents/PCO_LABO-/code/src/internal/utils.h
 /home/reds/Documents/PCO_LABO-/code/src/tests_main.cpp
-/home/reds/Documents/PCO_LABO-/code/src/clinic.h
-/home/reds/Documents/PCO_LABO-/code/src/seller.cpp
-/home/reds/Documents/PCO_LABO-/code/src/internal/costs.h
+/home/reds/Documents/PCO_LABO-/code/src/internal/fakeinterface.h
 /home/reds/Documents/PCO_LABO-/code/src/internal/display.h
  mmc:Q_OBJECT
  mdp:/home/reds/Documents/PCO_LABO-/code/src/internal/display.h
@@ -1154,7 +1152,9 @@
  mdp:/usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h
  mdp:/usr/local/include/pcosynchro/pcomutex.h
  mdp:/usr/local/include/pcosynchro/pcosemaphore.h
-/home/reds/Documents/PCO_LABO-/code/src/internal/fakeinterface.h
+/home/reds/Documents/PCO_LABO-/code/src/seller.cpp
+/home/reds/Documents/PCO_LABO-/code/src/internal/costs.h
+/home/reds/Documents/PCO_LABO-/code/src/clinic.h
 /home/reds/Documents/PCO_LABO-/code/src/internal/windowinterface.cpp
 /home/reds/Documents/PCO_LABO-/code/src/internal/iwindowinterface.h
 /home/reds/Documents/PCO_LABO-/code/src/hospital.h

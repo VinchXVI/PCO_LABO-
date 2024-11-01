@@ -88,6 +88,7 @@ public:
      */
     static void setInterface(IWindowInterface* windowInterface);
 
+
 private:
     std::vector<Seller*> suppliers;    // Liste des fournisseurs de ressources nécessaires à la clinique
     std::vector<Seller*> hospitals;     // Liste des hôpitaux associés à la clinique
@@ -95,9 +96,6 @@ private:
     const std::vector<ItemType> resourcesNeeded; // Liste des ressources requises pour le fonctionnement de la clinique
 
     int nbTreated;                      // Nombre total de patients traités par la clinique
-
-    // ajouté par nous
-    bool keepRoutine = true;
 
     static IWindowInterface* interface; // Pointeur statique vers l'interface utilisateur pour les logs et mises à jour visuelles
 

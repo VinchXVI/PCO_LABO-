@@ -22,27 +22,33 @@ Ambulance::Ambulance(int uniqueId, int fund, std::vector<ItemType> resourcesSupp
 }
 
 void Ambulance::sendPatient(){
-    int maxTry = 10;
-    for(int nbTry = 0; nbTry < maxTry; nbTry++){ //Essaie 10x d'envoyer des patients sinon arrête sa routine
+    const int maxTry = 20; // nombre d'essais pour livrer un patient
+    this->mutex.lock();
+    for(int nbTry = 0; nbTry < maxTry; nbTry++){
         //choisi un hopital aléatoirement, puis lui propose "d'acheter" un patient
-        int cost = this->chooseRandomSeller(hospitals)->send(ItemType::PatientSick, 1, getCostPerUnit(ItemType::PatientSick));
         int supplierCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientSick));
-        if (cost){
-            mutex.lock();
-            stocks[ItemType::PatientSick]--;
+        int cost = this->chooseRandomSeller(hospitals)->send(ItemType::PatientSick, 1, getCostPerUnit(ItemType::PatientSick));
+
+        if (cost > 0){
+            this->stocks[ItemType::PatientSick]--;
             this->money += cost - supplierCost;
             this->nbTransfer++;
-            mutex.unlock();
+            this->mutex.unlock();
             return;
         }
+
+       interface->simulateWork(); // attent un moment avant de réssayer
     }
-    keepRoutine = false;
+    // Arrive à ce point s'il n'a pas réussi à transférer un patient plusieurs fois
+    this->mutex.unlock();
+    this->stopRoutine = true;
+    return;
 }
 
 void Ambulance::run() {
     interface->consoleAppendText(uniqueId, "[START] Ambulance routine");
 
-    while (this->getNumberPatients() > 0 && keepRoutine) { //Tant que son "stock" de patients n'est pas vide et qu'il continue à faire des tranferts
+    while (this->getNumberPatients() > 0 and !this->stopRoutine) { //Tant que son "stock" de patients n'est pas vide et qu'il continue à faire des tranferts
         sendPatient();
         
         interface->simulateWork();

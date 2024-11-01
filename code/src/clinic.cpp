@@ -28,33 +28,36 @@ bool Clinic::verifyResources() {
 
 int Clinic::request(ItemType what, int qty){ // what == PatientHealed (appelé que par hopital) TODO
     int cost = 0;
-    if(this->stocks[what] != 0){
-        mutex.lock();
+    this->mutex.lock();
+    if(this->stocks[what] > 0){
         this->stocks[what]--;
         cost = getCostPerUnit(what) * qty;
         this->money += cost;
-        mutex.unlock();
     }
+    this->mutex.unlock();
     return cost;
 }
 
 void Clinic::treatPatient() {
     int employeeCost = getEmployeeSalary(getEmployeeThatProduces(ItemType::PatientHealed));
 
+    this->mutex.lock();
     if(this->money - employeeCost >= 0){
-        mutex.lock();
         this->money -= employeeCost;
-        mutex.unlock();
-    } else {
-        keepRoutine = false;
+    } else { // Si la clinique n'a plus les fonds pour traiter des patients, stop sa routine
+        this->stopRoutine = true;
+        this->mutex.unlock();
         return;
     }
+    this->mutex.unlock();
 
     //Temps simulant un traitement 
     interface->simulateWork();
 
     mutex.lock();
-    this->stocks[ItemType::PatientSick]--;
+    for(ItemType item : resourcesNeeded){
+        this->stocks[item]--;
+    }
     this->stocks[ItemType::PatientHealed]++;
     this->nbTreated++;
     mutex.unlock();
@@ -64,53 +67,63 @@ void Clinic::treatPatient() {
 
 void Clinic::orderResources() { // commande une ressource une par une (à changer ?) TODO
     int cost, qty;
+    bool transactionDone = false;
 
-    for(ItemType item : this->resourcesNeeded) {
-        qty = 0;
-        cost = 0;
+    //vérification si les fournisseur sont toujours actifs
+    bool suppliersStillRunning = false;
+    for(Seller* supplier : suppliers){
+        if(!supplier->isStopped())
+            suppliersStillRunning = true;
+    }
 
-        if(this->stocks[item] == 0) {
-            switch (item) {
-            case ItemType::PatientSick:
-                qty = 1;
-                if(this->money - qty * getCostPerUnit(item) >= 0) { // si fonds suffisants
-                    mutex.lock();
-                    cost = chooseRandomSeller(hospitals)->request(item, qty);
-                    mutex.unlock();
-                }
+    this->mutex.lock();
+        for(ItemType item : this->resourcesNeeded) {
+            qty = 0;
+            cost = 0;
+
+            if(this->stocks[item] == 0) {
+                switch (item) {
+                // Tansfert de patient depuis hôpitall
+                case ItemType::PatientSick:
+                    qty = 1;
+                    if(this->money - qty * getCostPerUnit(item) >= 0) { // si fonds suffisants
+                        cost = chooseRandomSeller(hospitals)->request(item, qty);
+                    }
                 break;
 
-            case ItemType::Pill:
-            case ItemType::Scalpel:
-            case ItemType::Stethoscope:
-            case ItemType::Syringe:
-            case ItemType::Thermometer:
-                qty = 5; // commande en lot de 5
-                if(this->money - qty * getCostPerUnit(item) >= 0) { // si fonds suffisants
-                    for(Seller* supplier : suppliers) { // cherche chaque fournisseur
-                        mutex.lock();
-                        cost = supplier->request(item, qty);
-                        mutex.unlock();
-                        if(cost) {
-                            break; // sort dès qu'on a trouvé un fournisseur
+                // Commande de matériel médicall
+                case ItemType::Pill:
+                case ItemType::Scalpel:
+                case ItemType::Stethoscope:
+                case ItemType::Syringe:
+                case ItemType::Thermometer:
+                default:
+                    qty = 5; // commande en lot de 5
+                    if(this->money - qty * getCostPerUnit(item) >= 0 and suppliersStillRunning) { // si fonds suffisants
+                        for(Seller* supplier : suppliers) { // cherche chaque fournisseur
+                            cost = supplier->request(item, qty);
+                            if(cost != 0) {
+                                break; // Arrête de chercher dès qu'on a trouvé un fournisseur
+                            }
                         }
                     }
+                break;
+                } // fin du switch
+
+                // Mise à jour des stocks et des fonds si la transaction a réussi
+                if(cost != 0) {
+                    this->stocks[item] += qty;
+                    this->money -= cost;
+                    transactionDone = true;
                 }
-                break;
+            } // fin de vérification des stocks d'un item
+        } // fin de boucle for chaque item
 
-            default:
-                break;
-            } // fin du switch
 
-            // Mise à jour des stocks et des fonds si la transaction a réussi
-            if(cost) {
-                mutex.lock();
-                this->stocks[item] += qty;
-                this->money -= cost;
-                mutex.unlock();
-            }
-        } // fin de vérification des stocks
-    } // fin de boucle for
+    if(!transactionDone and !suppliersStillRunning){ // Si aucune transaction a pu être effectuée et les que les fournisseur ne sont plus actifs, stopper le programme
+        stopRoutine = true;
+    }
+    this->mutex.unlock();
 }
 
 
@@ -121,7 +134,7 @@ void Clinic::run() {
     }
     interface->consoleAppendText(uniqueId, "[START] Factory routine");
 
-    while (this->money > 0 && keepRoutine) { // tant que la clinic a de l'argent pour s'approvisionner et traiter les patients
+    while (this->money > 0 and !stopRoutine) { // tant que la clinic a de l'argent pour s'approvisionner et traiter les patients
         
         if (verifyResources()) {
             treatPatient();

@@ -17,15 +17,15 @@ Supplier::Supplier(int uniqueId, int fund, std::vector<ItemType> resourcesSuppli
 }
 
 
-int Supplier::request(ItemType it, int qty) { //TODO
+int Supplier::request(ItemType it, int qty) {
     int cost = 0;
-    if(qty <= this->stocks[it]){
-        mutex.lock();
+    this->mutex.lock();
+    if(qty <= this->stocks[it] and !this->stopRoutine){ // s'il a le matériel en stock et qu'il est toujours en service
         cost = qty * getCostPerUnit(it);
         this->stocks[it] -= qty;
         this->money += cost;
-        mutex.unlock();
     }
+    this->mutex.unlock();
     return cost;
 }
 
@@ -35,20 +35,22 @@ void Supplier::run() {
         ItemType resourceSupplied = getRandomItemFromStock();
         int supplierCost = getEmployeeSalary(getEmployeeThatProduces(resourceSupplied));
 
+        this->mutex.lock();
         if(this->money - supplierCost >= 0){
-            mutex.lock();
             this->money -= supplierCost;
-            mutex.unlock();
         } else {
+            this->stopRoutine = true;
+            this->mutex.unlock();
             break; // s'il ne peut plus payer son employé, arrête la routine
         }
+        this->mutex.unlock();
 
         /* Temps aléatoire borné qui simule l'attente du travail fini*/
         interface->simulateWork();
 
-        mutex.lock();
+        this->mutex.lock();
         this->stocks[resourceSupplied]++;
-        mutex.unlock();
+        this->mutex.unlock();
 
         nbSupplied++;
 

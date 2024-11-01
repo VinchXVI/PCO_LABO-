@@ -21,53 +21,63 @@ Hospital::Hospital(int uniqueId, int fund, int maxBeds)
 
 int Hospital::request(ItemType what, int qty){ // what == patientSick (appelé que par clinic)
     int cost = 0;
+    this->mutex.lock();
     if(this->stocks[what] >= qty){
-        mutex.lock();
         this->stocks[what] -= qty;
         cost = getCostPerUnit(what) * qty;
-        this->money += cost - getEmployeeSalary(EmployeeType::Nurse);
-        mutex.unlock();
+        this->money += cost;
     }
+    this->mutex.unlock();
     return cost;
 }
 
-void Hospital::freeHealedPatient() { //TODO
+void Hospital::freeHealedPatient() {
+    this->mutex.lock();
     if(this->stocks[ItemType::PatientHealed] > 0){
-        mutex.lock();
         this->stocks[ItemType::PatientHealed]--;
-        this->money += getCostPerUnit(ItemType::PatientHealed) - getEmployeeSalary(EmployeeType::Nurse);
         this->nbFree++;
-        mutex.unlock();
     }
+    this->mutex.unlock();
 }
 
-void Hospital::transferPatientsFromClinic() { //TODO
-    int cost;
-    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + 1 <= this->maxBeds
-            and getCostPerUnit(ItemType::PatientHealed) + getEmployeeSalary(EmployeeType::Nurse) <= this->money ){ //S'il a assez de lits et les fonds
-      cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
+void Hospital::transferPatientsFromClinic() {
+    //  Check si les cliniques sont toujours actives
+    bool clinicStillRunning = false;
+    for(Seller* clinic : clinics){
+        if(!clinic->isStopped())
+            clinicStillRunning = true;
+    }
+    if(!clinicStillRunning){
+        this->stopRoutine = true;
+        return;
+    }
+
+
+    this->mutex.lock();
+    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + 1 <= this->maxBeds // s'il a assez de lits
+            and getCostPerUnit(ItemType::PatientHealed) + getEmployeeSalary(EmployeeType::Nurse) <= this->money ){ // et s'il a les fonds suffisants
+      int cost = chooseRandomSeller(clinics)->request(ItemType::PatientHealed, 1);
       if(cost != 0){
-          mutex.lock();
-          this->money -= cost + getEmployeeSalary(EmployeeType::Nurse);;
+          this->money -= (cost + getEmployeeSalary(EmployeeType::Nurse));
           this->stocks[ItemType::PatientHealed]++;
           this->nbHospitalised++;
-          mutex.unlock();
       }
     }
+    this->mutex.unlock();
 }
 
 int Hospital::send(ItemType it, int qty, int bill) { // it == patientSick (appelé que par ambulance)
     int cost = 0;
-
-    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + qty <= this->maxBeds
-            and qty * bill +  getEmployeeSalary(EmployeeType::Nurse) <= this->money){ //S'il a assez de lits et les fonds
-        mutex.lock();
+    this->mutex.lock();
+    if(this->stocks[ItemType::PatientSick] + this->stocks[ItemType::PatientHealed] + qty <= this->maxBeds// s'il a assez de lits
+            and (qty * bill) +  getEmployeeSalary(EmployeeType::Nurse) <= this->money // s'il a les fonds suffisants
+            and !stopRoutine){ // s'il est toujours actif
         this->stocks[it] += qty;
-        cost = bill * qty;
-        this->money -= cost + getEmployeeSalary(EmployeeType::Nurse);
+        cost = (bill * qty);
+        this->money -= (cost + getEmployeeSalary(EmployeeType::Nurse));
         this->nbHospitalised++;
-        mutex.unlock();
     }
+    this->mutex.unlock();
     return cost;
 }
 
@@ -81,7 +91,7 @@ void Hospital::run()
     interface->consoleAppendText(uniqueId, "[START] Hospital routine");
     int DayCounter = 0;
 
-    while (this->money > 0) { // tant qu'il a la moula
+    while (this->money > 0 and !stopRoutine) { // tant qu'il a l'argent et que les cliniques sont actives
         transferPatientsFromClinic();
 
         if(DayCounter % 5 == 0)
